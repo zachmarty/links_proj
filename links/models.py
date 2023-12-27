@@ -5,3 +5,4 @@ class Link(models.Model):
     link = models.URLField(verbose_name = 'оригинальная ссылка')
     hash_code = models.URLField(verbose_name = 'код', unique = True)
     user = models.ForeignKey(User, on_delete = models.CASCADE, verbose_name = 'пользователь')
+    last_click = models.DateTimeField(auto_created = True, auto_now = True)

@@ -1,9 +1,12 @@
-from django.shortcuts import HttpResponseRedirect
-from django.views.generic import TemplateView, CreateView, DeleteView
+from typing import Any
+from django.http import HttpResponseRedirect
+from django.views.generic import CreateView, DeleteView, TemplateView
 from links.models import Link
 from django.urls import reverse_lazy
 from links.forms import LinkForm
+from django.shortcuts import get_object_or_404, render
 import hashlib
+from django.utils import timezone
 
 class LinksIndex(CreateView):
     model = Link
@@ -24,5 +27,18 @@ class LinksIndex(CreateView):
     
 class LinkDeleteView(DeleteView):
     model = Link
-    success_url = reverse_lazy("user:profile")
     template_name = 'links/link_confirm_delete.html'
+    success_url = reverse_lazy("user:profile")
+    
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        obj = get_object_or_404(Link, id = self.object.pk, user = request.user.id)
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
+    
+def link_redirect(request, code):
+    link = Link.objects.get(hash_code = code)
+    link.last_click = timezone.now()
+    link.save()
+    return HttpResponseRedirect(link.link)
+        
